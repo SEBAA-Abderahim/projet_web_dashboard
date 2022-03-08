@@ -101,7 +101,7 @@ def main():
         placeholder.write("Data Prepprocessing...")
 
         # Initialize atom
-        df=df.replace(Nas,NaN)
+        df=df.replace(Nas,"?")
         X=df.drop(target,axis=1)
        
         
@@ -294,7 +294,7 @@ def main():
                     st.pyplot()
                 if st.checkbox("Quantitative-Quantitative Correlation"):
                     st.subheader("Quantitative Correlation")
-                    QuantCOLS=list(set(df.columns.tolist())-set(categorical_column(df)))
+                    QuantCOLS=list(set(df.select_dtypes(include=np.number).columns.tolist())-set(categorical_column(df)))
                     Qa1=st.selectbox("First Quantitative Column",QuantCOLS)
                     Qa2=st.selectbox("Second Quantitative Column",QuantCOLS)
                     st.write(sns.regplot(x = Qa1, y = Qa2,  ci = None,scatter_kws={"color": "blue"}, line_kws={"color": "red"}, data = df))
