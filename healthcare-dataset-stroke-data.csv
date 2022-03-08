@@ -5108,4 +5108,4 @@ id,gender,age,hypertension,heart_disease,ever_married,work_type,Residence_type,a
 44873,Female,81,0,0,Yes,Self-employed,Urban,125.2,40,never smoked,0
 19723,Female,35,0,0,Yes,Self-employed,Rural,82.99,30.6,never smoked,0
 37544,Male,51,0,0,Yes,Private,Rural,166.29,25.6,formerly smoked,0
-44679,Female,44,0,0,Yes,Govt_job,Urban,85.28,26.2,Unknown,0
+44679,Female,44,0,0,Yes,Govt_job,Urban,85.28,2000.2,Unknown,0
