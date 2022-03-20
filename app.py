@@ -307,6 +307,12 @@ def main():
             
 
 
-
+def choose_model():
+    typeOfModel = st.selectbox("Type of Models",("Base Models","Ensemblist Models"))
+    if typeOfModel == "Base Models":
+        modelName = st.selectbox("Select a Model",("Logistic Regression","SVM","KNN"))
+    else:
+        modelName = st.selectbox("Select a Model",("Random Forest","Ada Boost","Stacking Classifier"))
+    return modelName
 if __name__=="__main__":
     main()   
