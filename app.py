@@ -26,6 +26,15 @@ import numpy as np
 
 import seaborn as sns
 
+#Machine Learning Algorithmes
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.model_selection import train_test_split
+
+
 matplotlib.use("Agg")
 fig, ax = plt.subplots()
 matplotlib.rcParams.update({"font.size": 8})
@@ -303,16 +312,100 @@ def main():
         elif choice=="Machine learning":
             if preprecess==False:
                 st.subheader("Automated Machine Learning")
-            
+                st.markdown("> **Select the Model you want to train**")
+                modelName = get_model_name()
+                st.markdown("> **Adjust the hyperparameters of the selected model**")
+                params = get_parameters(modelName)
+                model = get_model(modelName,params)
+                
+                X = df.drop(columns=target)
+                y = df[target]
+                
+                # train test splitting
+                st.markdown("### Data spliting")
+                help_strat = "Stratification helps getting the same proportion of targets in train and test sets"
+                
+                test_size = st.slider("Test set size",0.1,0.5)
+                strat = st.checkbox(label="Stratification",help=help_strat)
+                
+                if strat:
+                    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=test_size,stratify=y)
+                else:
+                    X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=test_size)
+                        
+                st.write(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
             
 
-
-def choose_model():
+#returns the choosen model's name
+def get_model_name():
     typeOfModel = st.selectbox("Type of Models",("Base Models","Ensemblist Models"))
     if typeOfModel == "Base Models":
         modelName = st.selectbox("Select a Model",("Logistic Regression","SVM","KNN"))
     else:
-        modelName = st.selectbox("Select a Model",("Random Forest","Ada Boost","Stacking Classifier"))
+        modelName = st.selectbox("Select a Model",("Random Forest","Ada Boost"))
     return modelName
+
+#return a list of compatible penalties with given solver
+def penalty_select_logReg(solver):
+    if solver == "lbfgs":
+        penalties = ["none","l2"]
+    elif solver == "newton-cg":
+        penalties = ["none","l2"]
+    elif solver == "liblinear":
+        penalties = ["l1","l2"]
+    elif solver == "sag":
+        penalties = ["none","l2"]
+    else:
+        penalties = ["none","l1","l2","elasticnet"]
+    return penalties
+
+#set the choosen model's parameter ui and return the setted parameters
+def get_parameters(modelName):
+    params = dict()
+    if modelName == "SVM":
+        C = st.slider("C value",0.01,10.0)
+        kernels = ["rbf", "linear", "poly", "sigmoid", "precomputed"]
+        kernel = st.selectbox("Kernel",kernels)
+        params["C"] = C
+        params["kernel"] = kernel
+    elif modelName == "KNN":
+        K = st.slider("K neighbors",1,10)
+        params["K"] = K
+    elif modelName == "Logistic Regression":
+        C = st.slider("C value",0.01,10.0)
+        solvers = ["lbfgs", "newton-cg", "liblinear", "sag", "saga"]
+        solver = st.selectbox("Solver",solvers)
+        penalties = penalty_select_logReg(solver)
+        penalty = st.selectbox("Penalty",penalties)
+        params["C"] = C
+        params["solver"] = solver
+        params["penalty"] = penalty
+    elif modelName == "Random Forest":
+        estimators = st.slider("Number of Estimators",1,150)
+        max_depth = st.slider("Maximum depth",2,15)
+        params["estimators"] = estimators
+        params["max_depth"] = max_depth
+    else: #modelName == "Ada Boost"
+        estimators = st.slider("Number of Estimators",1,150)
+        lr = st.slider("Learning rate",0.01,10.0)
+        params["estimators"] = estimators
+        params["lr"] = lr
+    return params
+        
+#configure and return the choosen machine learning model
+def get_model(modelName,params):
+    if modelName == "SVM":
+        model = SVC(C=params["C"], kernel=params["kernel"])
+    elif modelName == "KNN":
+        model = KNeighborsClassifier(n_neighbors=params["K"])
+    elif modelName == "Logistic Regression":
+        model = LogisticRegression(C=params["C"], solver=params["solver"], penalty=params["penalty"])
+    elif modelName == "Random Forest":
+        model = RandomForestClassifier(n_estimators=params["estimators"], max_depth=params["max_depth"])
+    else: #modelName == "Ada Boost"
+        model = AdaBoostClassifier(n_estimators=params["estimators"], learning_rate=params["lr"])
+    return model
+
+
 if __name__=="__main__":
     main()   
