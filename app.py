@@ -33,6 +33,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, PrecisionRecallDisplay
+from sklearn.metrics import plot_confusion_matrix
 
 
 matplotlib.use("Agg")
@@ -334,6 +336,26 @@ def main():
                     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=test_size)
                         
                 st.write(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
+                
+                # Training the model
+                st.markdown("### Model Training and Evaluation")
+                
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+                
+                #Model evaluaton
+                metrics = get_metrics(y_test, y_pred)
+                st.write("The Accurracy score : ",metrics["accuracy"])
+                st.write("The Precision score : ",metrics["precision"])
+                st.write("The Recall score : ",metrics["recall"])
+                st.write("The F1 score : ",metrics["f1"])
+                
+                matrix_plot = st.checkbox("Confusion Matrics")
+                if matrix_plot:
+                    fig = plot_confusion_matrix(model, X_test, y_test)
+                    st.pyplot(fig)
+                
+                    
             
 
 #returns the choosen model's name
@@ -406,6 +428,15 @@ def get_model(modelName,params):
         model = AdaBoostClassifier(n_estimators=params["estimators"], learning_rate=params["lr"])
     return model
 
+def get_metrics(y_test,y_pred):
+    metrics = dict()
+    
+    metrics["accuracy"] = accuracy_score(y_test,y_pred)
+    metrics["precision"] = precision_score(y_test,y_pred)
+    metrics["recall"] = recall_score(y_test,y_pred)
+    metrics["f1"] = f1_score(y_test,y_pred)
+    
+    return metrics
 
 if __name__=="__main__":
     main()   
