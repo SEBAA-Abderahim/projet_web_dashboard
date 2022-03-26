@@ -34,7 +34,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, PrecisionRecallDisplay
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_curve, roc_auc_score
 
 
 matplotlib.use("Agg")
@@ -350,10 +351,25 @@ def main():
                 st.write("The Recall score : ",metrics["recall"])
                 st.write("The F1 score : ",metrics["f1"])
                 
-                matrix_plot = st.checkbox("Confusion Matrics")
+                st.markdown("### Additional evaluation metrics")
+                            
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    matrix_plot = st.checkbox("Confusion Matrics")
+                with col2:
+                    roc_plot = st.checkbox("ROC Curve")
+                
+                # Confnusion Matrix
                 if matrix_plot:
-                    fig = plot_confusion_matrix(model, X_test, y_test)
-                    st.pyplot(fig)
+                    cf_matrix = confusion_matrix(y_test,y_pred)
+                    plot_confusion_matrix(cf_matrix)
+                
+                # ROC Curve
+                if roc_plot:
+                    y_proba = model.predict_proba(X_test)
+                    plot_roc_curve(y_test, y_proba)
+                    
                 
                     
             
@@ -437,6 +453,46 @@ def get_metrics(y_test,y_pred):
     metrics["f1"] = f1_score(y_test,y_pred)
     
     return metrics
+
+def plot_confusion_matrix(cf_matrix):
+    fig = plt.figure()
+    
+    ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues')
+    ax.set_title('Confusion Matrix\n\n');
+    ax.set_xlabel('\nPredicted Values')
+    ax.set_ylabel('Actual Values ');
+    
+    # Ticket labels - List must be in alphabetical order
+    ax.xaxis.set_ticklabels(['False','True'])
+    ax.yaxis.set_ticklabels(['False','True'])
+    
+    # Plot on web app front
+    st.pyplot(fig)
+
+def plot_roc_curve(y_test, y_proba):
+    # Get the false negative and true positive rates
+    fpr, tpr, thresh = roc_curve(y_test, y_proba[:,1], pos_label=1)
+    
+    # roc curve for tpr = fpr 
+    random_probs = [0 for i in range(len(y_test))]
+    p_fpr, p_tpr, _ = roc_curve(y_test, random_probs, pos_label=1)
+    
+    # Compute the AUC Score
+    auc_score = roc_auc_score(y_test, y_proba[:,1])
+    
+    fig = plt.figure()
+    # Ploting
+    plt.plot(fpr, tpr, linestyle="--", label="AUC : "+str(auc_score), color="red")
+    plt.plot(p_fpr, p_tpr, linestyle="--", color="blue")
+    # Plot details
+    plt.title("ROC Curve")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    # Legend
+    plt.legend(loc="best")
+    
+    # Plot on web app front
+    st.pyplot(fig)
 
 if __name__=="__main__":
     main()   
