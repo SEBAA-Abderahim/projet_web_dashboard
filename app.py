@@ -37,6 +37,9 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, roc_auc_score
 
+import pickle
+import joblib
+
 
 matplotlib.use("Agg")
 fig, ax = plt.subplots()
@@ -97,7 +100,7 @@ def main():
         scale = st.sidebar.checkbox("Scale", False, "scale")
         encode = st.sidebar.checkbox("Encode", False, "encode")
         if(encode):
-            maxforleaveoneout=st.sidebar.number_input("maxcatforleaveoneout",min_value=3,max_value=10)
+            maxforleaveoneout=st.sidebar.number_input("maxCatForleaveOneOut",min_value=3,max_value=10)
         impute = st.sidebar.checkbox("Impute", False, "impute")
         if(impute):
 
@@ -336,7 +339,10 @@ def main():
                 else:
                     X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=test_size)
                         
-                st.write(X_train.shape,X_test.shape,y_train.shape,y_test.shape)
+                st.write("X_train shape : ",X_train.shape)
+                st.write("y_train shape : ",y_train.shape)
+                st.write("X_test shape : ",X_test.shape)
+                st.write("y_test shape : ",y_test.shape)
                 
                 # Training the model
                 st.markdown("### Model Training and Evaluation")
@@ -369,6 +375,24 @@ def main():
                 if roc_plot:
                     y_proba = model.predict_proba(X_test)
                     plot_roc_curve(y_test, y_proba)
+                    
+                # Download 
+                st.markdown("### Exporting the Model")
+                down = st.checkbox("Export Model",help="Download your trained model")
+                if down:
+                    col1, col2 = st.columns(2)
+                    fpkl = open("filePkl","wb")
+                    fjbl = open("fileJbl","wb")
+                    pickle.dump(model,fpkl)
+                    joblib.dump(model,fjbl)
+                    
+                    fpkl = open("filePkl","rb")
+                    fjbl = open("fileJbl","rb")
+                    
+                    with col1:
+                        st.download_button(label="Download Trained Model Pickle",data=fpkl,file_name="model.pkl")
+                    with col2:
+                        st.download_button(label="Download Trained Model Joblib",data=fjbl,file_name="model.joblib")
                     
                 
                     
